@@ -1,7 +1,5 @@
 package org.example.parser.tofile;
 
-
-import org.example.parser.fromweb.MetroParser;
 import org.example.pojo.*;
 
 import org.json.simple.JSONArray;
@@ -16,6 +14,27 @@ import java.util.List;
 
 
 public class MetroData {
+
+    public static void saveSCLToJson(List<StationFromWeb> stations,List<Line> lines, String filePath) throws IOException {
+        JSONObject resultJson = new JSONObject();
+        JSONObject stationsByLine = new JSONObject();
+
+        for (StationFromWeb station : stations) {
+            String lineNumber = station.lineNumber();
+            stationsByLine.putIfAbsent(lineNumber, new JSONArray());
+            ((JSONArray) stationsByLine.get(lineNumber)).add(station.name());
+        }
+
+        resultJson.put("stations", stationsByLine);
+        resultJson.put("lines", getLineData(lines));
+
+        Path path = Path.of(filePath);
+        if (Files.notExists(path)) {
+            Files.createFile(path);
+        }
+
+        Files.writeString(path, resultJson.toJSONString(), StandardOpenOption.TRUNCATE_EXISTING);
+    }
 
     public static void saveStationsToJson(List<StationAllData> stations, String filePath) throws IOException {
 
@@ -39,9 +58,7 @@ public class MetroData {
 
         Path path = Path.of(filePath);
 
-        if (Files.notExists(path)) {
-            Files.createFile(path);
-        }
+        if (Files.notExists(path)) Files.createFile(path);
 
         Files.writeString(path, resultJson.toJSONString(), StandardOpenOption.TRUNCATE_EXISTING);
     }
@@ -50,7 +67,7 @@ public class MetroData {
             List<StationFromWeb> allStations,
             List<Line> allLines,
             List<StationWithDate> allDatesFromFiles,
-            List<StationWithDepth> allDepthsFromFiles) throws IOException {
+            List<StationWithDepth> allDepthsFromFiles) {
         List<StationAllData> allData = new ArrayList<>();
 
         for (var station : allStations){
@@ -64,6 +81,20 @@ public class MetroData {
         }
 
         return allData;
+    }
+
+    private static JSONArray getLineData(List<Line> lines) {
+
+        JSONArray linesArray = new JSONArray();
+
+        for (Line line : lines) {
+            JSONObject lineObject = new JSONObject();
+            lineObject.put("name", line.name());
+            lineObject.put("number", line.number());
+            linesArray.add(lineObject);
+        }
+
+        return linesArray;
     }
 
     private static String getDate(String nameStation, List<StationWithDate> allStationWithDates){

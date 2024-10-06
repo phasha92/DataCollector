@@ -43,6 +43,9 @@ public class Main {
         String pathJSON = "src\\main\\resources\\all_data.json";
         List<StationAllData> allData =  MetroData.getAllData(allStations,allLines, allDatesFromFiles, allStationsFromFiles);
         MetroData.saveStationsToJson(allData, pathJSON);
+        pathJSON = "src\\main\\resources\\data.json";
+        MetroData.saveSCLToJson(allStations,allLines, pathJSON);
+
     }
 
 }
