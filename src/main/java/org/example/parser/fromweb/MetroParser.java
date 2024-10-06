@@ -1,7 +1,7 @@
 package org.example.parser.fromweb;
 
-import org.example.parser.fromweb.entity.Line;
-import org.example.parser.fromweb.entity.Station;
+import org.example.pojo.Line;
+import org.example.pojo.StationFromWeb;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -30,22 +30,24 @@ public class MetroParser {
         return lines;
     }
 
-    public static List<Station> parseStations(String path) throws IOException{
+    public static List<StationFromWeb> parseStations(String filePath) throws IOException{
 
-        Document document = Jsoup.parse(Files.readString(Paths.get(path)));
-        List<Station> metroStations = new ArrayList<>();
-        Elements stations = document.select(".js-metro-stations");
+        List<StationFromWeb> stations = new ArrayList<>();
 
-        for (Element stationList : stations) {
-            String lineNumber = stationList.attr("data-line");
-            Elements stationNames = stationList.select("span.name");
+        String content = new String(Files.readAllBytes(Paths.get(filePath)));
+        Document doc = Jsoup.parse(content);
+        Elements stationElements = doc.select("p.single-station");
 
-            for (Element station : stationNames) {
-                String stationName = station.text();  // Получаем имя станции
-                metroStations.add(new Station(stationName, lineNumber));
-            }
+        for (Element stationElement : stationElements) {
+
+            String name = stationElement.select("span.name").text();
+            String lineNumber = stationElement.parent().attr("data-line");
+            boolean hasConnection = !stationElement.select("span.t-icon-metroln").isEmpty();
+
+            stations.add(new StationFromWeb(name, lineNumber, hasConnection));
         }
 
-        return metroStations;
+        return stations;
     }
+
 }

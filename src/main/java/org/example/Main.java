@@ -1,14 +1,18 @@
 package org.example;
 
+import org.example.parser.fromfile.Parser;
 import org.example.parser.fromfile.ParserCVS;
+import org.example.pojo.*;
+import org.example.parser.tofile.MetroData;
 import org.example.searcher.Searcher;
 import org.example.parser.fromweb.MetroParser;
-import org.example.parser.fromweb.WebPageSaver;
+import org.example.parser.tofile.WebPageSaver;
 import org.example.parser.fromfile.ParserJSON;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.example.searcher.FormatFile.*;
@@ -16,26 +20,50 @@ import static org.example.searcher.FormatFile.*;
 public class Main {
     public static void main(String[] args) throws IOException, ParseException {
 
-        // 1
         String pathFile = WebPageSaver.saveDocument("https://skillbox-java.github.io/", "metro_doc.html");
-        MetroParser.parseLines(pathFile).forEach(System.out::println);
-        MetroParser.parseStations(pathFile).forEach(System.out::println);
 
-        // 2
-        String pathFile2 = "src\\data";
-        List<Path> jsonPaths = Searcher.searchFiles(pathFile2, JSON);
-        List<Path> csvPaths = Searcher.searchFiles(pathFile2, CSV);
-        jsonPaths.forEach(System.out::println);
-        csvPaths.forEach(System.out::println);
+        List<StationFromWeb> allStations = MetroParser.parseStations(pathFile);
+        List<Line> allLines = MetroParser.parseLines(pathFile);
 
-        // 3
-        ParserJSON parserJSON = new ParserJSON();
-        for (int i = 0; i < 2; i++) parserJSON.getObjectsFromFile(jsonPaths.get(i)).forEach(System.out::println);
+        List<StationWithDate> allDatesFromFiles = new ArrayList<>();
+        List<StationWithDepth> allStationsFromFiles = new ArrayList<>();
 
-        // 4
-        ParserCVS parserCVS = new ParserCVS();
-        for (int i = 0; i < 2; i++) parserCVS.getObjectsFromFile(csvPaths.get(i)).forEach(System.out::println);
+        String path = "src\\data";
+        List<Path> csvPaths = Searcher.searchFiles(path, CSV);
+        List<Path> jsonPaths = Searcher.searchFiles(path, JSON);
 
+        Parser<StationWithDepth> parserJSON = new ParserJSON();
+        Parser<StationWithDate>  parserCVS = new ParserCVS();
+
+        for (int i = 0; i < 3; i++) {
+            allDatesFromFiles.addAll(parserCVS.getObjectsFromFile(csvPaths.get(i)));
+            allStationsFromFiles.addAll(parserJSON.getObjectsFromFile(jsonPaths.get(i)));
+        }
+
+        String pathJSON = "src\\main\\resources\\all_data.json";
+        List<StationAllData> allData =  MetroData.getAllData(allStations,allLines, allDatesFromFiles, allStationsFromFiles);
+        MetroData.saveStationsToJson(allData, pathJSON);
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

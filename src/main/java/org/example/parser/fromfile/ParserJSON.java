@@ -1,6 +1,6 @@
 package org.example.parser.fromfile;
 
-import org.example.parser.fromfile.entity.Station;
+import org.example.pojo.StationWithDepth;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -11,11 +11,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParserJSON implements Parser<Station> {
+public class ParserJSON implements Parser<StationWithDepth> {
 
-    public List<Station> getObjectsFromFile(Path path) throws IOException, ParseException {
+    public List<StationWithDepth> getObjectsFromFile(Path path) throws IOException, ParseException {
 
-        List<Station> stations = new ArrayList<>();
+        List<StationWithDepth> stationWithDepths = new ArrayList<>();
 
         JSONParser parser = new JSONParser();
         JSONArray array = (JSONArray) parser.parse(getStringFromFile(path));
@@ -24,9 +24,9 @@ public class ParserJSON implements Parser<Station> {
             JSONObject jsonObject = (JSONObject) element;
             String name = (String) jsonObject.get("station_name");
             String depth = (String) jsonObject.get("depth");
-            stations.add(new Station(name, depth));
+            stationWithDepths.add(new StationWithDepth(name, depth));
         });
-        return stations;
+        return stationWithDepths;
     }
 
 }
